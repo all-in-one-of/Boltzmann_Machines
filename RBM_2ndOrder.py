@@ -19,3 +19,16 @@ def RBM_2( hid,vis):
     # define Energy
 
     energy = - np.dot(bias_v,vis)-np.dot(bias_h,hid)- np.dot(vis,np.dot(weight,hid))
+
+    if start % 10000 == 0:
+        print(sess.run(
+            err_sum, feed_dict={X: trX, rbm_w: n_w, rbm_vb: n_vb, rbm_hb: n_hb}))
+        image = Image.fromarray(
+            tile_raster_images(
+                X=n_w.T,
+                img_shape=(28, 28),
+                tile_shape=(25, 20),
+                tile_spacing=(1, 1)
+            )
+        )
+        image.save("rbm_%d.png" % (start / 100000))    
