@@ -1,4 +1,9 @@
+import tensorflow as tf
 import numpy as np
+import input_data
+from PIL import Image
+from Util import tile_raster_images
+
 
 
 #RBM - bi partite
