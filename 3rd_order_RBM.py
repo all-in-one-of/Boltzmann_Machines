@@ -15,12 +15,15 @@ trX, trY, teX, teY = mnist.train.images, mnist.train.labels, mnist.test.images, 
 X = tf.placeholder("float", [None, 784])
 Y = tf.placeholder("float", [None, 10])
 
-#weights and biases
+#weights and biases of standard RBM
 rbm_w = tf.placeholder("float", [784, 500])
 rbm_vb = tf.placeholder("float", [784])
 rbm_hb = tf.placeholder("float", [500])
 
-#Gibbs sampling
+#weights of additional 3-partite connection
+rbm_w3 = tf.placeholder("float",[250,250])
+
+#Gibbs sampling for standard RBM
 h0 = sample_prob(tf.nn.sigmoid(tf.matmul(X, rbm_w) + rbm_hb))
 v1 = sample_prob(tf.nn.sigmoid(tf.matmul(h0, tf.transpose(rbm_w)) + rbm_vb))
 h1 = tf.nn.sigmoid(tf.matmul(v1, rbm_w) + rbm_hb)
@@ -75,4 +78,4 @@ for start, end in zip(range(0, len(trX), batchsize), range(batchsize, len(trX), 
                 tile_spacing=(1, 1)
             )
         )
-image.show()
+        image.show()
