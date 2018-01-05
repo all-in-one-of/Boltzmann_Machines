@@ -6,6 +6,11 @@ import input_data
 from PIL import Image
 from Util import tile_raster_images
 
+def sample_prob(probs):
+    return tf.nn.relu(
+        tf.sign(
+            probs - tf.random_uniform(tf.shape(probs))))
+
 alpha = 0.5
 batchsize = 100
 
