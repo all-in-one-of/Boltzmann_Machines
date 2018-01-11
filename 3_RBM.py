@@ -5,6 +5,7 @@ import numpy as np
 import input_data
 from PIL import Image
 from Util import tile_raster_images
+import Simulated_Annealing as sim
 
 def sample_prob(probs):
     return tf.nn.relu(
@@ -30,52 +31,53 @@ rbm_hb = tf.placeholder("float", [500])
 rbm_w3 = tf.placeholder("float",[250,250])
 
 
-#Gibbs sampling for standard RBM
 #split sampling of hiddenlayer into two groups
-ha0 = sample_prob(tf.nn.sigmoid(tf.split(tf.matmul(X,rbm_w),2,1)[0]+tf.matmul(sample_prob(tf.nn.sigmoid(tf.split(tf.matmul(X,rbm_w),2,1)[1])),rbm_w3)+tf.split(rbm_hb,2)[0]))
-hb0 = sample_prob(tf.nn.sigmoid(tf.split(tf.matmul(X,rbm_w),2,1)[1]+tf.matmul(sample_prob(tf.nn.sigmoid(tf.split(tf.matmul(X,rbm_w),2,1)[0])),rbm_w3)+tf.split(rbm_hb,2)[1]))
-h0 = tf.concat([ha0,hb0],1)
-v1 = sample_prob(tf.nn.sigmoid(tf.matmul(h0, tf.transpose(rbm_w)) + rbm_vb))
-ha1 = sample_prob(tf.nn.sigmoid(tf.split(tf.matmul(X,rbm_w),2,1)[0]+tf.matmul(sample_prob(tf.nn.sigmoid(tf.split(tf.matmul(X,rbm_w),2,1)[1])),rbm_w3)+tf.split(rbm_hb,2)[0]))
-hb1 = sample_prob(tf.nn.sigmoid(tf.split(tf.matmul(X,rbm_w),2,1)[1]+tf.matmul(sample_prob(tf.nn.sigmoid(tf.split(tf.matmul(X,rbm_w),2,1)[0])),rbm_w3)+tf.split(rbm_hb,2)[1]))
-h1 = tf.concat([ha1,hb1],1)
+#train as normal RBM ignoring tripartite connections. Then use this to bring whole system into thermal equilibrium. Update all weights
 
-#Gibbs sampling for 3rd order weights
-hb0_2 = sample_prob(tf.nn.sigmoid(tf.matmul(ha0,rbm_w3)))
-ha1_2 = sample_prob(tf.nn.sigmoid(tf.matmul(hb0_2,tf.transpose(rbm_w3))))
-hb1_2 = sample_prob(tf.nn.sigmoid(tf.matmul(ha1_2,rbm_w3)))
+#train RBM
 
-ha0_3 = sample_prob(tf.nn.sigmoid(tf.matmul(hb0,rbm_w3)))
-hb1_3 = sample_prob(tf.nn.sigmoid(tf.matmul(ha0_3,tf.transpose(rbm_w3))))
-ha1_3 = sample_prob(tf.nn.sigmoid(tf.matmul(hb1_3,rbm_w3)))
-
-
-#updating rules of standard RBM
+#Gibbs sampling for standard RBM
+h0 = sample_prob(tf.nn.sigmoid(tf.matmul(X, rbm_w) + rbm_hb))
+v1 = sample_prob(tf.nn.sigmoid(
+    tf.matmul(h0, tf.transpose(rbm_w)) + rbm_vb))
+h1 = tf.nn.sigmoid(tf.matmul(v1, rbm_w) + rbm_hb)
+#weight update
 w_positive_grad = tf.matmul(tf.transpose(X), h0)
 w_negative_grad = tf.matmul(tf.transpose(v1), h1)
-update_w = rbm_w + alpha * (w_positive_grad - w_negative_grad) / tf.to_float(tf.shape(X)[0])
+update_w = rbm_w + alpha * \
+    (w_positive_grad - w_negative_grad) / tf.to_float(tf.shape(X)[0])
 update_vb = rbm_vb + alpha * tf.reduce_mean(X - v1, 0)
 update_hb = rbm_hb + alpha * tf.reduce_mean(h0 - h1, 0)
 
-#update 3rd order weights
-w3_pos_1 = tf.matmul(tf.transpose(ha0),hb0_2)
-w3_pos_2 = tf.matmul(tf.transpose(hb0),ha0_3)
-w3_pos = 0.5 *(w3_pos_1+w3_pos_2)
-
-w3_neg_1 = (tf.matmul(tf.transpose(ha1_2),hb1_2))
-w3_neg_2 = (tf.matmul(tf.transpose(hb1_3),ha1_3))
-w3_neg = 0.5 *(w3_neg_1+w3_neg_2)
-update_w3 = rbm_w3+alpha*(w3_pos-w3_neg)/tf.to_float((tf.shape(ha0)[0]))
-#claculating error
-#sample
-ha_sample =sample_prob(tf.nn.sigmoid(tf.split(tf.matmul(X,rbm_w),2,1)[0]+tf.matmul(sample_prob(tf.nn.sigmoid(tf.split(tf.matmul(X,rbm_w),2,1)[1])),rbm_w3)+tf.split(rbm_hb,2)[0]))
-hb_sample = sample_prob(tf.nn.sigmoid(tf.split(tf.matmul(X,rbm_w),2,1)[1]+tf.matmul(sample_prob(tf.nn.sigmoid(tf.split(tf.matmul(X,rbm_w),2,1)[0])),rbm_w3)+tf.split(rbm_hb,2)[1]))
-h_sample  = tf.concat([ha_sample,hb_sample],1)
-
-v_sample = sample_prob(tf.nn.sigmoid(tf.matmul(h_sample, tf.transpose(rbm_w)) + rbm_vb))
-#error
+#calculating error
+h_sample = sample_prob(tf.nn.sigmoid(tf.matmul(X, rbm_w) + rbm_hb))
+v_sample = sample_prob(tf.nn.sigmoid(
+    tf.matmul(h_sample, tf.transpose(rbm_w)) + rbm_vb))
 err = X - v_sample
 err_sum = tf.reduce_mean(err * err)
+
+#train entire system with simulated annealing
+#energy functional of complete system
+h01=tf.split(h0,2,1)[0]
+h02=tf.split(h0,2,1)[1]
+
+energy = tf.matmul(X,tf.transpose(tf.expand_dims(rbm_vb,0)))+tf.matmul(h0,tf.transpose(tf.expand_dims(rbm_hb,0)))\
+         +tf.matmul(tf.matmul((X),rbm_w),tf.transpose(h0))+tf.matmul(tf.matmul(tf.transpose(h01),rbm_w3),h02)
+
+#clamp visible layer
+h_eq1 = sim.sim_an(h0,100,energy)
+
+#free run on all layers
+v_eq,h_eq2 = sim.sim_an([X,h_eq1],100,energy)
+
+#weightupdate RBM(simplified, potentially erratic learning)
+w_positive_grad_3 = tf.matmul(tf.transpose(X,h_eq1))
+w_negative_grad_3 = tf.matmul(tf.transpose(v_eq,h_eq2))
+update_w_3=rbm_w+alpha*(w_positive_grad_3-w_negative_grad_3)
+update_vb_3 = rbm_vb +alpha*tf.reduce_mean(X-v_eq,0)
+update_hb_3 = rbm_hb+alpha*tf.reduce_mean(h_eq1-h_eq2,0)
+#weightupdate of tripartite connections
+
 
 #initializing session
 sess = tf.Session()
@@ -92,7 +94,7 @@ o_hb = np.zeros([500], np.float32)
 o_w3 = np.zeros([250,250], np.float32)
 print(sess.run(err_sum, feed_dict={X: trX, rbm_w: o_w, rbm_vb: o_vb, rbm_hb: o_hb,rbm_w3:o_w3}))
 
-#run training and use generativity
+#run training and use generativity (RBM)
 for start, end in zip(range(0, len(trX), batchsize), range(batchsize, len(trX), batchsize)):
     batch = trX[start:end]
     n_w = sess.run(update_w, feed_dict={
@@ -101,11 +103,11 @@ for start, end in zip(range(0, len(trX), batchsize), range(batchsize, len(trX), 
                     X: batch, rbm_w: o_w, rbm_vb: o_vb, rbm_hb: o_hb,rbm_w3:o_w3})
     n_hb = sess.run(update_hb, feed_dict={
                     X: batch, rbm_w: o_w, rbm_vb: o_vb, rbm_hb: o_hb,rbm_w3:o_w3})
-    n_w3 = sess.run(update_w3, feed_dict={X: batch, rbm_w: o_w, rbm_vb: o_vb, rbm_hb: o_hb,rbm_w3:o_w3})
+    #n_w3 = sess.run(update_w3, feed_dict={X: batch, rbm_w: o_w, rbm_vb: o_vb, rbm_hb: o_hb,rbm_w3:o_w3})
     o_w = n_w
     o_vb = n_vb
     o_hb = n_hb
-    o_w3 = n_w3
+    #o_w3 = n_w3
     if start % 10000 == 0:
         print(sess.run(err_sum, feed_dict={X: trX, rbm_w: n_w, rbm_vb: n_vb, rbm_hb: n_hb, rbm_w3:o_w3}))
         image = Image.fromarray(
@@ -119,3 +121,4 @@ for start, end in zip(range(0, len(trX), batchsize), range(batchsize, len(trX), 
         image.show()
 
 #0.0836942
+#train entire system with weights initialized as result from rbm training
