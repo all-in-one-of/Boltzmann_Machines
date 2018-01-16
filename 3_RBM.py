@@ -61,14 +61,15 @@ err_sum = tf.reduce_mean(err * err)
 h01=tf.split(h0,2,1)[0]
 h02=tf.split(h0,2,1)[1]
 
-energy = tf.matmul(X,tf.transpose(tf.expand_dims(rbm_vb,0)))+tf.matmul(h0,tf.transpose(tf.expand_dims(rbm_hb,0)))\
+def energy(X,h0,rbm_vb,rbm_hb,rbm_w,rbm_w3):
+    energy= tf.matmul(X,tf.transpose(tf.expand_dims(rbm_vb,0)))+tf.matmul(h0,tf.transpose(tf.expand_dims(rbm_hb,0)))\
          +tf.matmul(tf.matmul((X),rbm_w),tf.transpose(h0))+tf.matmul(tf.matmul(tf.transpose(h01),rbm_w3),h02)
-
+    return energy
 #clamp visible layer
-h_eq1 = sim.sim_an(h0,100,energy)
+h_eq1 = sim.sim_an(X,h0,rbm_vb,rbm_hb,rbm_w,rbm_w3,True,100,energy)[1]
 
-#free run on all layers
-v_eq,h_eq2 = sim.sim_an([X,h_eq1],100,energy)
+#free run
+v_eq,h_eq2 = sim.sim_an(X,h_eq1,rbm_vb,rbm_hb,rbm_w,rbm_w3,False,100,energy)
 
 #weightupdate RBM(simplified, potentially erratic learning)
 w_positive_grad_3 = tf.matmul(tf.transpose(X,h_eq1))
@@ -76,8 +77,19 @@ w_negative_grad_3 = tf.matmul(tf.transpose(v_eq,h_eq2))
 update_w_3=rbm_w+alpha*(w_positive_grad_3-w_negative_grad_3)
 update_vb_3 = rbm_vb +alpha*tf.reduce_mean(X-v_eq,0)
 update_hb_3 = rbm_hb+alpha*tf.reduce_mean(h_eq1-h_eq2,0)
-#weightupdate of tripartite connections
 
+#weightupdate of tripartite connections
+w3_positive_grad_3 = tf.matmul(tf.transpose(tf.split(h_eq1)[0]),tf.split(h_eq1)[1])
+w3_negative_grad_3 = tf.matmul(tf.transpose(tf.split(h_eq2)[0]),tf.split(h_eq2)[1])
+update_w3_3 = rbm_w3 + alpha * \
+    (w3_positive_grad_3 - w3_negative_grad_3) / tf.to_float(tf.shape(X)[0])
+
+#error
+h_eq1 = sim.sim_an(X,h0,rbm_vb,rbm_hb,rbm_w,rbm_w3,True,100,energy)[1]
+v_eq,h_eq2 = sim.sim_an(X,h_eq1,rbm_vb,rbm_hb,rbm_w,rbm_w3,False,100,energy)
+
+err_eq = X - v_eq
+err_eq_sum = tf.reduce_mean(err_eq * err_eq)
 
 #initializing session
 sess = tf.Session()
