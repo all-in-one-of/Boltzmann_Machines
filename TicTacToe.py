@@ -10,6 +10,7 @@ import copy as co
 import TemporalDifference as TD
 import predictor
 
+
 # state is a 3x3 Matrix with 1=x, 2 = o and 0 empty
 # value funktion is a list of length 3^9
 value=.5*np.ones((19683))
@@ -19,7 +20,8 @@ alpha=0.5
 gamma=1
 #epsilon for greedy policy
 eps=0.05
-
+#iteration for training
+MaxIt=100000
 
 
 #define winning
@@ -105,43 +107,22 @@ def game():
             break
         
         state=executeMove(state,startPlayer,value_func)
-        print(state)
+
         if(winX(state)!=0):
             break
         
         if(np.count_nonzero(state)==9):
             break
         state=executeMove(state,secondPlayer,value_func)
-        print(state)
+
         if(winX(state)!=0):
             break
         if(np.count_nonzero(state)==9):
             break
 #define a training session
 def training():
-    MaxIt=10
     for i in range(MaxIt):
         game()
      
 
 
-A=np.matrix([[-1, 1,1],[0,-1,0],[-1,0,-1]])
-#action=[1,0,1]
-#print(A[action[0]])
-#print((A))
-#eter=[]
-#peter.append((move(co.copy(A),action)))
-#peter.append(move(co.copy(A),[0,0,0]))
-#print(peter)
-#print(winX(peter[0]))
-#print(A)
-#print(np.array(A)[0])
-#print(np.array(np.reshape(A,(1,9)))[0])
-
-#print(stateID(A))
-#print(A)
-#print(value[stateID(A)])
-#print(moveGenerator(A,1))
-#print(predictor.eps_greed(value_function,moveGenerator(A,1),0.1,1))
-# intialize value function
-training()
