@@ -5,7 +5,7 @@ def sim_an(x0, T0, energy):
     #define starting parameters x0 and T0
     x = x0
     T = T0
-    tau = 1.2
+    tau = 1.1
     i=0
     maxIt = 1000
     y=copy.copy(x0)
@@ -48,9 +48,9 @@ def rand_choice(input):
 def energy(x):
     en = 0
     for i in range(len(x)):
-        en+=+x[i]**2+x[i]**3+12*x[i]**4
+        en+=+x[i]**2-x[i]**3+12*x[i]**4
     return en
 
-x0 = [1,1,0,1,0,0,1,0,0,1,0,1,0,1,1,1,1,1,1,0,1,1,0,0,0,1]
-t0 = 10000
-print(energy(sim_an(x0,t0,energy)))
+x0 = [1,1,0,0,0,1,0,0,1,0,1,0,1,1,1,1,1,1,0,1,1,0,0,0,1]
+t0 = 1000
+print((sim_an(x0,t0,energy)))
