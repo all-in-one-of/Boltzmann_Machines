@@ -21,7 +21,7 @@ gamma=1
 #epsilon for greedy policy
 eps=0.05
 #iteration for training
-MaxIt=100000
+MaxIt=10
 
 
 #define winning
