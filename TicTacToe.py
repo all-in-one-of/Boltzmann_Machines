@@ -79,12 +79,14 @@ def moveGenerator(current_state, player):
                 moves.append(move(co.copy(current_state),[i,j,player])[0])
     return moves
 # execution of a eps-greedy move
-#method: from list [TD(0), n-step_TD ] pf strings
+#method: from list [random, TD(0), n-step_TD ] pf strings
 def executeMove(state,player,value_function, method):
     if method == "TD(0)":
         return learn_TD0(state, value_function,player)
     if method == 'n-step_TD':
         return learn_n_step_TD(state,value_function, player,3)
+    if method == 'random':
+        return predictor.randomAction(moveGenerator(state,player))
 
 #build a list of steps and rewards for n-step TD    
 def builtChain_n_step_TD(state,player,value_function,n):

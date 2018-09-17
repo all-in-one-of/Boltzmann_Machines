@@ -23,3 +23,7 @@ def eps_greed(value_function, moves, eps, minmax):
     else: 
         final_move = moves[np.random.randint(0,len(moves))]
     return np.matrix(final_move)
+
+#rondom action as comparsion model
+def randomAction(moves):
+    return np.matrix(moves[np.random.randint(0,len(moves))])

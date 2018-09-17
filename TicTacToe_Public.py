@@ -104,7 +104,7 @@ def publicGame():
             self.buttons2 = ['self.m00','self.m01','self.m02','self.m10','self.m11','self.m12','self.m20','self.m21','self.m22']
             self.quitGame.grid(row=3,column=1)
             if ply==-1:
-                self.state=ttt.executeMove(self.state,-1*ply,ttt.value_func, 'TD(0)')
+                self.state=ttt.executeMove(self.state,-1*ply,ttt.value_func, 'random')
                 for i in range(3):
                     for j in range(3):
                         if self.state[i,j]!=0:
@@ -178,7 +178,7 @@ def publicGame():
                     return 0                    
                     
                 dummy=self.state
-                self.state = ttt.executeMove(self.state, -1*self.player,ttt.value_func, "TD(0)" )
+                self.state = ttt.executeMove(self.state, -1*self.player,ttt.value_func, "random" )
               
                 for i in range(3):
                     for j in range(3):
