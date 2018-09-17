@@ -14,7 +14,6 @@ import numpy as np
 def eps_greed(value_function, moves, eps, minmax):
     v=-2
     action=[]
-    
     for m in moves:
         if v<= minmax*value_function(m):
            v=minmax*value_function(m)

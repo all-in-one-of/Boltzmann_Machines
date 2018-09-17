@@ -15,13 +15,13 @@ import predictor
 # value funktion is a list of length 3^9
 value=.5*np.ones((19683))
 #learning parameter
-alpha=0.5
+alpha=0.2
 #discount parameter
 gamma=1
 #epsilon for greedy policy
 eps=0.05
 #iteration for training
-MaxIt=10
+MaxIt=1000
 
 
 #define winning
@@ -79,10 +79,32 @@ def moveGenerator(current_state, player):
                 moves.append(move(co.copy(current_state),[i,j,player])[0])
     return moves
 # execution of a eps-greedy move
-def executeMove(state,player,value_function):
-    return learn(state, value_function,player)
-    
+#method: from list [TD(0), n-step_TD ] pf strings
+def executeMove(state,player,value_function, method):
+    if method == "TD(0)":
+        return learn_TD0(state, value_function,player)
+    if method == 'n-step_TD':
+        return learn_n_step_TD(state,value_function, player,3)
 
+#build a list of steps and rewards for n-step TD    
+def builtChain_n_step_TD(state,player,value_function,n):
+    notwinning=True
+    if winX(state)!=0:
+        notwinning = False
+        return [],[]
+    i=0
+    chain = []
+    reward = []
+    while(notwinning and i<n and np.count_nonzero(state)!=9):    
+        dummy=predictor.eps_greed(value_function,moveGenerator(state,player),eps,player)
+        chain.append(dummy)
+        reward.append(winX(dummy))
+        if(winX(dummy)!=0):
+            notwinning = False
+        state = dummy
+        i+=1
+    return chain,reward
+        
 # evaluating a state: interprete state as ternary representation
 def stateID(state):
     newstate= (np.mod(co.copy(state)+3,3))
@@ -91,12 +113,17 @@ def value_func(state):
     return value[stateID(state)]
 
 # learning via temporal differenct (comparwe "Reinforcment learning: An Introduction" by Sutton and Barto pp. 7)
-def learn(state, value_function,player):
+def learn_TD0(state, value_function,player):
     state_1=predictor.eps_greed(value_function, moveGenerator(state,player),eps,player)
     value[stateID(state)]=TD.TD_0_update(value_function,state,state_1,0,alpha,gamma)
     return state_1
+#learn with n-step TD
+def learn_n_step_TD(state, value_function,player,n):
+    state_follow, reward = builtChain_n_step_TD(state,player, value_function, n)
+    value[stateID(state)]=TD.n_step_TD(value_function, state, state_follow, reward , alpha, gamma )
+    return predictor.eps_greed(value_function, moveGenerator(state,player),eps,player)
 #define one game of tic tac toe
-def game():
+def game(method):
     p=np.random.randint(0,2)
     startPlayer = (-1)**p
     secondPlayer= -1*startPlayer
@@ -105,24 +132,35 @@ def game():
     while(incomplete):
         if(np.count_nonzero(state)==9):
             break
-        
-        state=executeMove(state,startPlayer,value_func)
 
+        state=executeMove(state,startPlayer,value_func, method)
         if(winX(state)!=0):
             break
         
         if(np.count_nonzero(state)==9):
             break
-        state=executeMove(state,secondPlayer,value_func)
-
+        state=executeMove(state,secondPlayer,value_func,method)
         if(winX(state)!=0):
             break
         if(np.count_nonzero(state)==9):
             break
 #define a training session
 def training():
+    readValue()
     for i in range(MaxIt):
-        game()
-     
-
-
+        game('n-step_TD')
+    safeValue() 
+def safeValue():
+    file = open('valueFunction','w')
+    for v in value:
+        file.write(str(v)+'\n')
+    file.close()
+def readValue():
+    file = open('valueFunction','r')
+    value2=[]
+    for f in file:
+        value2.append(f)
+    value=np.array(value2)    
+    file.close()
+#safeValue()
+#training()

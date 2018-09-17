@@ -17,8 +17,8 @@ def publicGame():
 
         def __init__(self, master):
             
-            ttt.training()
-
+            #ttt.training()
+            ttt.readValue()
             frame = Frame(master)
             frame.pack()
 
@@ -104,7 +104,7 @@ def publicGame():
             self.buttons2 = ['self.m00','self.m01','self.m02','self.m10','self.m11','self.m12','self.m20','self.m21','self.m22']
             self.quitGame.grid(row=3,column=1)
             if ply==-1:
-                self.state=ttt.executeMove(self.state,-1*ply,ttt.value_func)
+                self.state=ttt.executeMove(self.state,-1*ply,ttt.value_func, 'TD(0)')
                 for i in range(3):
                     for j in range(3):
                         if self.state[i,j]!=0:
@@ -159,6 +159,7 @@ def publicGame():
                     close = Button(top,text = "ok", command = top.quit)
                     close.pack()
                     top.mainloop()
+                    ttt.safeValue()
                     self.quitGame.invoke()
                     top.destroy()
                     
@@ -170,13 +171,14 @@ def publicGame():
                     close = Button(top,text = "ok", command = top.quit)
                     close.pack()
                     top.mainloop()
+                    ttt.safeValue()
                     self.quitGame.invoke()
                     top.destroy()
                     
                     return 0                    
                     
                 dummy=self.state
-                self.state = ttt.learn(self.state, ttt.value_func, -1*self.player)
+                self.state = ttt.executeMove(self.state, -1*self.player,ttt.value_func, "TD(0)" )
               
                 for i in range(3):
                     for j in range(3):
@@ -192,6 +194,8 @@ def publicGame():
                     close = Button(top,text = "ok", command = top.quit)
                     close.pack()
                     top.mainloop()
+                    ttt.safeValue()
+                    self.quitGame.invoke()
                     top.destroy()
                     return 0  
                 elif(np.count_nonzero(self.state)==9):
@@ -201,6 +205,7 @@ def publicGame():
                     close = Button(top,text = "ok", command = top.quit)
                     close.pack()
                     top.mainloop()
+                    ttt.safeValue()
                     self.quitGame.invoke()
                     top.destroy()
                     
