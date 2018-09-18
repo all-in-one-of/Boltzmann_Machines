@@ -103,7 +103,19 @@ def builtChain_n_step_TD(state,player,value_function,n):
         reward.append(winX(dummy))
         if(winX(dummy)!=0):
             notwinning = False
+            break
         state = dummy
+        if(np.count_nonzero(state)==9):
+            break
+        dummy=predictor.eps_greed(value_function,moveGenerator(state,player),eps,-1*player)
+        chain.append(dummy)
+        reward.append(winX(dummy))
+        if(winX(dummy)!=0):
+            notwinning = False
+            break
+        state = dummy
+        if(np.count_nonzero(state)==9):
+            break        
         i+=1
     return chain,reward
         
@@ -164,5 +176,5 @@ def readValue():
         value2.append(f)
     value=np.array(value2)    
     file.close()
-#safeValue()
-#training()
+safeValue()
+training()
