@@ -1,4 +1,10 @@
-# Boltzmann_Machines
+#AI: Reinforcement Learning and Boltzmann_Machines
+
+Toying with Reinforcement Learning strategies
+Implementation of TicTacToe with different learning methods as
+-TD(0)
+-n-step TD (Temporal Difference)
+
 Toying with implementation of bi- and tripartite Boltzmann Machines
 
 Aim is to compare a bipartite Boltzmann machine (first simply restricted), to a tripartite boltzmann machine (first some kind of restricted machine).
