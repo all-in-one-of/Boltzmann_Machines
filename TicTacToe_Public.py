@@ -18,7 +18,7 @@ def publicGame():
         def __init__(self, master):
             
             #ttt.training()
-            ttt.readValue()
+            ttt.readValue_n_stepTD()
             frame = Frame(master)
             frame.pack()
 
@@ -58,7 +58,7 @@ def publicGame():
             self.startGame(-1)
         def startGame(self,ply):
             top = Toplevel()
-            
+            ttt.readValueTD0()
             self.state= np.matrix([[0,0,0],[0,0,0],[0,0,0]])
 
             self.quitGame = Button(top, text = "Quit", fg = 'red', command = top.quit)
@@ -104,7 +104,7 @@ def publicGame():
             self.buttons2 = ['self.m00','self.m01','self.m02','self.m10','self.m11','self.m12','self.m20','self.m21','self.m22']
             self.quitGame.grid(row=3,column=1)
             if ply==-1:
-                self.state=ttt.executeMove(self.state,-1*ply,ttt.value_func, 'random')
+                self.state=ttt.executeMove(self.state,-1*ply,ttt.value_func_n_stepTD, 'n-step_TD')
                 for i in range(3):
                     for j in range(3):
                         if self.state[i,j]!=0:
@@ -159,7 +159,7 @@ def publicGame():
                     close = Button(top,text = "ok", command = top.quit)
                     close.pack()
                     top.mainloop()
-                    ttt.safeValue()
+                    ttt.safeValue_n_stepTD()
                     self.quitGame.invoke()
                     top.destroy()
                     
@@ -171,14 +171,14 @@ def publicGame():
                     close = Button(top,text = "ok", command = top.quit)
                     close.pack()
                     top.mainloop()
-                    ttt.safeValue()
+                    ttt.safeValue_n_stepTD()
                     self.quitGame.invoke()
                     top.destroy()
                     
                     return 0                    
                     
                 dummy=self.state
-                self.state = ttt.executeMove(self.state, -1*self.player,ttt.value_func, "random" )
+                self.state = ttt.executeMove(self.state, -1*self.player,ttt.value_func_n_stepTD, 'n-step_TD')
               
                 for i in range(3):
                     for j in range(3):
@@ -194,7 +194,7 @@ def publicGame():
                     close = Button(top,text = "ok", command = top.quit)
                     close.pack()
                     top.mainloop()
-                    ttt.safeValue()
+                    ttt.safeValue_n_stepTD()
                     self.quitGame.invoke()
                     top.destroy()
                     return 0  
@@ -205,7 +205,7 @@ def publicGame():
                     close = Button(top,text = "ok", command = top.quit)
                     close.pack()
                     top.mainloop()
-                    ttt.safeValue()
+                    ttt.safeValue_n_stepTD()
                     self.quitGame.invoke()
                     top.destroy()
                     
