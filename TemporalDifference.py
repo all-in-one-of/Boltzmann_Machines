@@ -5,7 +5,11 @@ Created on Fri Sep 14 08:27:01 2018
 
 @author: oster
 """
-import numpy as np
+import numpy as np 
+#import xerus
+
+def TD0_error(value_function, state_0,state_1,reward,gamma):
+    return (reward+gamma*value_function(state_1)-value_function(state_0))
 # Temporal Difference learning with TD(0) update
 #with value_function: (approximated) value function
 #state_0: current state
@@ -14,7 +18,7 @@ import numpy as np
 #alpha: step-size/learning parameter
 #gamma: discount factor
 def TD_0_update(value_function, state_0, state_1, reward, alpha, gamma):
-    return value_function(state_0)+alpha*(reward+gamma*value_function(state_1)-value_function(state_0))
+    return value_function(state_0)+alpha*TD0_error(value_function, state_0,state_1,reward,gamma)
 
 
 #n-step TD model learning (assumming opponent uses same policy)
@@ -44,7 +48,7 @@ def semi_gradient_TD_0(value_function, state_0, state_1, reward, alpha, gamma,we
         for j in range(9):
             for k in range(9):
                 grad[i][j][k]=x_0[i]*x_0[j]*x_0[k]
-    delta_weights=weights+alpha*(reward+gamma*value_function(state_1)-value_function(state_0))*grad
+    delta_weights=weights+alpha*TD0_error(value_function, state_0,state_1,reward,gamma)*grad
     return delta_weights
     
 def tensor_alternativ(value_function, state_0, state_1, reward, alpha, gamma,weights):
@@ -56,5 +60,10 @@ def tensor_alternativ(value_function, state_0, state_1, reward, alpha, gamma,wei
                     for m in range(3):
                         for n in range(3):
                             grad[i,j,k,l,m,n] = state_0[0,i]*state_0[1,j]*state_0[2,k]*state_0[l,0]*state_0[m,1]*state_0[n,2]
-    delta_weights=weights+alpha*(reward+gamma*value_function(state_1)-value_function(state_0))*grad
+    delta_weights=weights+alpha*TD0_error(value_function, state_0,state_1,reward,gamma)*grad
     return delta_weights
+
+def TT_train_TD0(value_function, state_0,state_1,reward,alpha,gamma,weights,rank):
+    grad = xerus.TTTensor([3,3,3,3,3,3],rank)
+    weights_new = weights+alpha*TD0_error(value_function, state_0,state_1,reward,gamma)*grad
+    return weights_new

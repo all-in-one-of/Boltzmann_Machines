@@ -23,7 +23,7 @@ gamma=1
 #epsilon for greedy policy
 #eps=0.1
 #iteration for training
-MaxIt=1000
+MaxIt=300
 #weights for semi gradient TD(0)
 
 weights = 1*np.ones((9,9,9))
@@ -202,31 +202,31 @@ def game(method,value_function,alpha,eps):
 #define a training session
 def training():
     readValue_n_stepTD()
-    eps1 = .1
-    eps2=.1
-    eps3 = .1
-    eps4 = .1
+    eps1 = .15
+    eps2=.15
+    eps3 = .15
+    eps4 = .15
     decrease = .99
     for i in range(MaxIt):
-        game('n-step_TD',value_func_n_stepTD,.1/(i+1)**(2/3),eps1)
+        game('n-step_TD',value_func_n_stepTD,.2/(i+1)**(3/5),eps1)
         eps1*=decrease
     safeValue_n_stepTD()
     readValueTD0()
     print("Training n step finished")
     for i in range(MaxIt):
-        game('TD(0)', value_funcTD0,.1/(i+1)**(2/3),eps2)
+        game('TD(0)', value_funcTD0,.2/(i+1)**(3/5),eps2)
         eps2*=decrease
     safeValueTD0()  
     print('training TD(0) finished')
     readWeights()
     for i in range(MaxIt):
-        game('semi_gradient_TD0',value_func_semi_gradient_TD0,.1/(i+1)**(2/3),eps3)
+        game('semi_gradient_TD0',value_func_semi_gradient_TD0,.2/(i+1)**(3/5),eps3)
         eps3*=decrease
     safeWeights()
     print('Training semi gradient finished')
     readWeightsAlt()
     for i in range(MaxIt):
-        game('tensor_alternativ',value_func_tensor_alternativ,.1/(i+1)**(2/3),eps4)
+        game('tensor_alternativ',value_func_tensor_alternativ,.2/(i+1)**(3/5),eps4)
         eps4*=decrease
     safeWeightsAlt()
     print('Training t4nsor alternativ finsihed')
@@ -240,7 +240,8 @@ def readValueTD0():
     value2=[]
     for f in file:
         value2.append(f)
-    value=np.array(value2)    
+    for i in range(len(np.array(value2))):
+        value[i]=np.array(value2)[i]    
     file.close()
 def safeValue_n_stepTD():
     file = open('valueFunction_n_step_TD','w')
@@ -252,7 +253,8 @@ def readValue_n_stepTD():
     value2=[]
     for f in file:
         value2.append(f)
-    value_n_step=np.array(value2)    
+    for i in range(len(np.array(value2))):
+        value_n_step[i]=np.array(value2)[i]         
     file.close()  
 def safeWeights():
     file = open('weights','w')

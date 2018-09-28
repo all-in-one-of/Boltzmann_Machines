@@ -35,6 +35,12 @@ def run():
     ttt.readValue_n_stepTD()
     ttt.readValueTD0()  
     ttt.readWeights()
+    summ0=0
+    print('zero game')
+    for i in range(1000):
+        if(gameFight('random','random',ttt.value_funcTD0,ttt.value_funcTD0)==1):
+            summ0+=1
+    summ1=0    
     print('first game')
     for i in range(1000):
         if(gameFight('random','TD(0)',ttt.value_funcTD0,ttt.value_funcTD0)==1):
@@ -64,6 +70,6 @@ def run():
     for i in range(1000):
         if(gameFight('TD(0)','semi_gradient_TD0',ttt.value_funcTD0,ttt.value_func_semi_gradient_TD0)==1):
             summe2b+=1
-    return summe ,summ1,summ1b, summe1c ,summe2, summe2b 
+    return summ0,summe ,summ1,summ1b, summe1c ,summe2, summe2b 
 
 print(run())
