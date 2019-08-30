@@ -1,4 +1,4 @@
-#AI: Reinforcement Learning and Boltzmann_Machines
+# AI: Reinforcement Learning and Boltzmann_Machines
 
 Toying with Reinforcement Learning strategies
 Implementation of TicTacToe with different learning methods as
